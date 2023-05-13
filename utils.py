@@ -71,24 +71,13 @@ def make_data(paths_data = paths):
 
     return X, labels
 
-def Norm(X, option = 'min_max'):
-
+def Norm(X, X_min, X_max, X_mean, X_std, option = 'min_max'):
     if option == "min_max":
-        X_min = X.min(axis=0, keepdims=True)
-        X_max = X.max(axis=0, keepdims=True)
         X_norm = (X - X_min) / (X_max - X_min)
         return X_norm
-    # , X_min, X_max
     elif option == "z_score":
-        Z_score = (X - np.mean(X)) / np.std(X)
+        Z_score = (X - X_mean) / X_std
         return Z_score
-    # , np.mean(X), np.std(X)
-    elif option == "l2":
-        L2 = X / np.sqrt(np.sum(np.power(X, 2)))
-        return L2
-    elif option == "l1":
-        L1 = X / np.sum(np.abs(X))
-        return L1
     
 def visualize(X, y, option="3d", legend = True):
     colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
