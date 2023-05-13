@@ -102,7 +102,7 @@ def model_predict(X, y, X_test, name, path = None):
     if path != None:
         data = pd.read_csv(path, sep="\t")
         x = data.iloc[:, 1].values
-        x = Norm(x).reshape(1,X.shape[1])
+        x = Norm(x, X_min, X_max, X_mean, X_std).reshape(1,X.shape[1])
     else: x = X_test
 
     model = name
