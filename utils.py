@@ -127,7 +127,8 @@ def model_predict(X_train, y_train, X_test, y_test, name, X_min = None, X_max = 
     result = {"Predict": predict, "Probability": probs 
             # , "Number of parameters": num_params
               }
-    evaluate_model(name, X_train, y_train, X_test, y_test)
+    if path == None:
+        evaluate_model(name, X_train, y_train, X_test, y_test)
     return result
 
 def calculate_time(model, X, y):
