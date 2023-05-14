@@ -7,6 +7,7 @@ import warnings
 from sklearn.exceptions import FitFailedWarning, DataConversionWarning
 import time
 
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
@@ -79,7 +80,7 @@ def Norm(X, X_min, X_max, X_mean, X_std, option = 'min_max'):
         Z_score = (X - X_mean) / X_std
         return Z_score
     
-def visualize(X, y, option="3d", legend = True):
+def visualize(X, y, option="3d", eval= 0, azim = 0, legend = True):
     colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
     fig = plt.figure()
     if option == "3d":
@@ -90,10 +91,12 @@ def visualize(X, y, option="3d", legend = True):
         idx = np.where(y == c)[0]
         if option == "3d":
             ax.scatter3D(X[idx,3], X[idx,2], X[idx,4], c=colors[c], label=f"{labels[c]}")
+            ax.view_init(elev=eval, azim=azim)
         else:
             ax.scatter(X[idx,0], X[idx,1], c=colors[c], label=f"{labels[c]}")
     if legend == True:
         ax.legend()
+    
     plt.show()
 
 def model_predict(X, y, X_test, name, path = None):
@@ -136,9 +139,9 @@ def calculate_time(model, X, y):
         classifier.fit(X, y)
     time_train_end = time.process_time()
     time_train = time_train_end - time_train_start
-    print(time_train)
+    return time_train
 
-def Grid_search_model(X,y):
+def Grid_search_model(X,y, cv = 2):
     models = {
         'Logistic Regression': LogisticRegression(),
         'SVM': SVC(),
@@ -179,10 +182,47 @@ def Grid_search_model(X,y):
             start_time = time.time()
             model = models[name]
             params = parameters[name]
-            clf = GridSearchCV(model, params, cv=5)
+            clf = GridSearchCV(model, params, cv=cv)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 clf.fit(X, y)
             end_time = time.time()
             print(f"Best parameters for {name}: {clf.best_params_}, score: {clf.best_score_ :.2f}")
             print(f"Time taken for {name}: {end_time - start_time:.2f} seconds\n")
+
+def evaluate_model(model, X_train, y_train, X_test, y_test):
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    
+    acc = accuracy_score(y_test, y_pred)
+    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted')
+    
+    cm = confusion_matrix(y_test, y_pred)
+    class_names = np.unique(y_test)
+    fig, ax = plt.subplots()
+    im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    ax.figure.colorbar(im, ax=ax)
+    ax.set(xticks=np.arange(cm.shape[1]), yticks=np.arange(cm.shape[0]),
+           xticklabels=class_names, yticklabels=class_names,
+           title='Confusion matrix',
+           ylabel='True label',
+           xlabel='Predicted label')
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+
+    print("Accuracy: {:.4f}".format(acc))
+    print("Precision: {:.4f}".format(precision))
+    print("Recall: {:.4f}".format(recall))
+    print("F1-score: {:.4f}".format(f1_score))
