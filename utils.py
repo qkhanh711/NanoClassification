@@ -198,6 +198,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
 
     y_pred = model.predict(X_test)
     
+    np.seterr(divide='ignore', invalid='ignore')  # bỏ qua warning "UndefinedMetricWarning"
     acc = accuracy_score(y_test, y_pred)
     precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted')
     
@@ -226,3 +227,4 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     print("Precision: {:.4f}".format(precision))
     print("Recall: {:.4f}".format(recall))
     print("F1-score: {:.4f}".format(f1_score))
+
