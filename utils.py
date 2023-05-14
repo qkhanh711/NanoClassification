@@ -12,7 +12,6 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from sklearn.decomposition import PCA
 import time
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -25,7 +24,6 @@ from sklearn.exceptions import FitFailedWarning, DataConversionWarning
 paths = ["Data for Nano-AI/4-nitrophenol", "Data for Nano-AI/Carbaryl", "Data for Nano-AI/Chloramphenicol", "Data for Nano-AI/Congo Red", "Data for Nano-AI/Crystal Violet", 
          "Data for Nano-AI/Glyphosate", "Data for Nano-AI/Methylene Blue", "Data for Nano-AI/Thiram", "Data for Nano-AI/Tricyclazole", "Data for Nano-AI/Urea"]
 labels = ["4_nitrophenol", "Carbaryl", "Chloramphenicol", "Congo red", "Crystal Violet", "Glyphosate", "Methylene", "Thiram", "Tricylazole", "Urea"]
-compare = ["Tricyclazole.txt", "Tricyclazole So sanh.txt"]
 
 file_names = ['1.txt', '2.txt', '3.txt', '4.txt', '5.txt']
 
@@ -99,7 +97,8 @@ def visualize(X, y, option="3d", eval= 0, azim = 0, legend = True):
     
     plt.show()
 
-def model_predict(X, y, X_test, name, path = None):
+def model_predict(X_train, y_train, X_test, y_test, name, path = None):
+    print(type(name).__name__)
     """ If path = None, the model will make predictions on the test set
     , otherwise it will make a prediction on a single sample """
     if path != None:
@@ -111,7 +110,7 @@ def model_predict(X, y, X_test, name, path = None):
     model = name
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        model.fit(X, y)
+        model.fit(X_train, y_train)
         # if type(name).__name__ == 'KNeighborsClassifier':
         #     num_params = model.n_neighbors
         # elif type(name).__name__ == 'DecisionTreeClassifier':
@@ -128,6 +127,7 @@ def model_predict(X, y, X_test, name, path = None):
     result = {"Predict": predict, "Probability": probs 
             # , "Number of parameters": num_params
               }
+    print(evaluate_model(name, X_train, y_train, X_test, y_test))
     return result
 
 def calculate_time(model, X, y):
@@ -198,10 +198,9 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
 
     y_pred = model.predict(X_test)
     
-    np.seterr(divide='ignore', invalid='ignore')  # bỏ qua warning "UndefinedMetricWarning"
+    np.seterr(divide='ignore', invalid='ignore') 
     acc = accuracy_score(y_test, y_pred)
-    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted')
-    
+    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted', zero_division=0)
     cm = confusion_matrix(y_test, y_pred)
     class_names = np.unique(y_test)
     fig, ax = plt.subplots()
