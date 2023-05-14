@@ -14,7 +14,8 @@ from utils import *
 from extract_feature_AE import *
 from extract_feature_PCA import *
 
-def test_models(X_train, y_train, X_test, y_test):
+def test_models(X_train, y_train, X_test, y_test, model, X_min = None, X_max = None, X_mean = None, X_std= None):
+    ''' Model in range 0 to 5'''
     models = [LogisticRegression(C = 0.1, penalty = 'l2', solver = 'liblinear'),
             SVC(C = 1.0, degree = 2, gamma = 'scale', shrinking = True,  probability=True, kernel = 'linear'),
             KNeighborsClassifier(algorithm = 'auto',p = 1, weights = 'distance', n_neighbors = 3, metric = 'cosine'),
@@ -22,6 +23,5 @@ def test_models(X_train, y_train, X_test, y_test):
             RandomForestClassifier(criterion = 'gini', max_depth = 6, min_samples_leaf = 2, min_samples_split = 5, n_estimators = 100,  random_state = 42),
             BernoulliNB(alpha=0.1)]
 
-    for i in range(len(models)):
-        print(model_predict(X_train, y_train, X_test, y_test, models[0])['Predict'])
-        print(y_test.T)
+    print(model_predict(X_train, y_train, X_test, y_test, models[model], X_min, X_max, X_mean, X_std)['Predict'])
+    print(y_test.T)

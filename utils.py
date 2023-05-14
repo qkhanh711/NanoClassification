@@ -97,14 +97,14 @@ def visualize(X, y, option="3d", eval= 0, azim = 0, legend = True):
     
     plt.show()
 
-def model_predict(X_train, y_train, X_test, y_test, name, path = None):
+def model_predict(X_train, y_train, X_test, y_test, name, X_min = None, X_max = None, X_mean = None, X_std = None, path = None):
     print(type(name).__name__)
     """ If path = None, the model will make predictions on the test set
     , otherwise it will make a prediction on a single sample """
     if path != None:
         data = pd.read_csv(path, sep="\t")
         x = data.iloc[:, 1].values
-        x = Norm(x, X_min, X_max, X_mean, X_std).reshape(1,X.shape[1])
+        x = Norm(x, X_min, X_max, X_mean, X_std).reshape(1,X_train.shape[1])
     else: x = X_test
 
     model = name
@@ -127,7 +127,7 @@ def model_predict(X_train, y_train, X_test, y_test, name, path = None):
     result = {"Predict": predict, "Probability": probs 
             # , "Number of parameters": num_params
               }
-    print(evaluate_model(name, X_train, y_train, X_test, y_test))
+    evaluate_model(name, X_train, y_train, X_test, y_test)
     return result
 
 def calculate_time(model, X, y):
@@ -208,7 +208,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     ax.figure.colorbar(im, ax=ax)
     ax.set(xticks=np.arange(cm.shape[1]), yticks=np.arange(cm.shape[0]),
            xticklabels=class_names, yticklabels=class_names,
-           title='Confusion matrix',
+           title=f'{type(model).__name__}',
            ylabel='True label',
            xlabel='Predicted label')
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
@@ -226,4 +226,3 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     print("Precision: {:.4f}".format(precision))
     print("Recall: {:.4f}".format(recall))
     print("F1-score: {:.4f}".format(f1_score))
-
