@@ -128,7 +128,7 @@ def model_predict(X_train, y_train, X_test, y_test, name, X_min = None, X_max = 
             # , "Number of parameters": num_params
               }
     if path == None:
-        evaluate_model(name, X_train, y_train, X_test, y_test)
+        evaluate_model(name, X_test, y_test)
     return result
 
 def calculate_time(model, X, y):
@@ -191,11 +191,7 @@ def Grid_search_model(X,y, cv = 2):
             print(f"Best parameters for {name}: {clf.best_params_}, score: {clf.best_score_ :.2f}")
             print(f"Time taken for {name}: {end_time - start_time:.2f} seconds\n")
 
-def evaluate_model(model, X_train, y_train, X_test, y_test):
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        model.fit(X_train, y_train)
+def evaluate_model(model, X_test, y_test):
 
     y_pred = model.predict(X_test)
     
@@ -204,6 +200,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted', zero_division=0)
     cm = confusion_matrix(y_test, y_pred)
     class_names = np.unique(y_test)
+
     fig, ax = plt.subplots()
     im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
     ax.figure.colorbar(im, ax=ax)
