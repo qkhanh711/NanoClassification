@@ -7,7 +7,7 @@ import warnings
 from sklearn.exceptions import FitFailedWarning, DataConversionWarning
 import time
 
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score, confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score , confusion_matrix
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
@@ -20,6 +20,12 @@ from sklearn.naive_bayes import BernoulliNB
 
 import warnings
 from sklearn.exceptions import FitFailedWarning, DataConversionWarning
+
+import scikitplot as skplt
+import pickle
+from os import path
+import os
+import seaborn as sns
 
 paths = ["Data for Nano-AI/4-nitrophenol", "Data for Nano-AI/Carbaryl", "Data for Nano-AI/Chloramphenicol", "Data for Nano-AI/Congo Red", "Data for Nano-AI/Crystal Violet", 
          "Data for Nano-AI/Glyphosate", "Data for Nano-AI/Methylene Blue", "Data for Nano-AI/Thiram", "Data for Nano-AI/Tricyclazole", "Data for Nano-AI/Urea"]
@@ -97,38 +103,25 @@ def visualize(X, y, option="3d", eval= 0, azim = 0, legend = True):
     
     plt.show()
 
-def model_predict(X_train, y_train, X_test, y_test, name, X_min = None, X_max = None, X_mean = None, X_std = None, path = None):
-    print(type(name).__name__)
+def model_predict(X_test, y_test, name, X_min = None, X_max = None, X_mean = None, X_std = None, path = None):
+    print("Testing with " + type(name).__name__)
     """ If path = None, the model will make predictions on the test set
     , otherwise it will make a prediction on a single sample """
     if path != None:
         data = pd.read_csv(path, sep="\t")
         x = data.iloc[:, 1].values
-        x = Norm(x, X_min, X_max, X_mean, X_std).reshape(1,X_train.shape[1])
+        x = Norm(x, X_min, X_max, X_mean, X_std).reshape(1,X_test.shape[1])
     else: x = X_test
 
     model = name
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        model.fit(X_train, y_train)
-        # if type(name).__name__ == 'KNeighborsClassifier':
-        #     num_params = model.n_neighbors
-        # elif type(name).__name__ == 'DecisionTreeClassifier':
-        #     num_params = model.get_n_leaves()
-        # elif type(name).__name__ == 'RandomForestClassifier':
-        #     num_params = model.get_params()
-        # else:
-        #     num_params = np.size(model.coef_)
 
     predict = model.predict(x)
     proba = model.predict_proba(x)
     probs = [np.round(p, 2) for p in proba]
     
-    result = {"Predict": predict, "Probability": probs 
-            # , "Number of parameters": num_params
-              }
+    result = {"Predict": predict, "Class" : [labels[int(p)] for p in predict], "Probability": probs}
     if path == None:
-        evaluate_model(name, X_test, y_test)
+        evaluate_model(name, X_test, y_test, labels)
     return result
 
 def calculate_time(model, X, y):
@@ -154,7 +147,8 @@ def Grid_search_model(X,y, cv = 2):
 
     parameters = {
         'Logistic Regression': {'C': [0.01, 0.1, 1.0, 10.0], 'penalty': ['l1', 'l2'], 
-                                'solver': ['liblinear']},
+                                'solver': ['lbfgs','liblinear']},
+
         'SVM': {'C': [0.01, 0.1, 1.0, 10.0], 'kernel': ['linear', 'rbf'], 
                 'gamma': ['scale', 'auto'], 'degree': [2, 3, 4], 
                 'shrinking': [True, False]},
@@ -191,36 +185,35 @@ def Grid_search_model(X,y, cv = 2):
             print(f"Best parameters for {name}: {clf.best_params_}, score: {clf.best_score_ :.2f}")
             print(f"Time taken for {name}: {end_time - start_time:.2f} seconds\n")
 
-def evaluate_model(model, X_test, y_test):
-
+def evaluate_model(model, X_test, y_test, labels):
     y_pred = model.predict(X_test)
     
     np.seterr(divide='ignore', invalid='ignore') 
     acc = accuracy_score(y_test, y_pred)
     precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted', zero_division=0)
     cm = confusion_matrix(y_test, y_pred)
-    class_names = np.unique(y_test)
 
-    fig, ax = plt.subplots()
-    im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    ax.figure.colorbar(im, ax=ax)
-    ax.set(xticks=np.arange(cm.shape[1]), yticks=np.arange(cm.shape[0]),
-           xticklabels=class_names, yticklabels=class_names,
-           title=f'{type(model).__name__}',
-           ylabel='True label',
-           xlabel='Predicted label')
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-             rotation_mode="anchor")
-    fmt = 'd'
-    thresh = cm.max() / 2.
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, format(cm[i, j], fmt),
-                    ha="center", va="center",
-                    color="white" if cm[i, j] > thresh else "black")
-    fig.tight_layout()
-
+    cm_percent = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]) * 100
+    
+    plt.figure(figsize=(10.2, 7))
+    sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues")
+    plt.title("Confusion Matrix")
+    plt.xticks(np.arange(len(labels)) + 0.5, labels, rotation=45, ha="right")
+    plt.yticks(np.arange(len(labels)) + 0.5, labels, rotation=0)
+    plt.xlabel("Predicted (%)")
+    plt.ylabel("True label")
+    plt.savefig(f"./plots/{type(model).__name__}.pdf")
+    
     print("Accuracy: {:.4f}".format(acc))
     print("Precision: {:.4f}".format(precision))
     print("Recall: {:.4f}".format(recall))
     print("F1-score: {:.4f}".format(f1_score))
+   
+def save_model(file_name, model):
+    if not path.isfile(file_name):
+        # saving the trained model to disk
+        with open(file_name, 'wb') as file:
+            pickle.dump(model, file)
+        print(f"Saved model '{file_name}' to disk")
+    else:
+        print(f"Model '{file_name}' already saved")

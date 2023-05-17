@@ -15,7 +15,8 @@ def pca(X, X_mean, U):
     X_PCA = np.dot(U.T, X_hat.T).T
     return X_PCA
 
-def extract_PCA(X_train, X_mean, n_components = 3 ):
-    U = U_for_pca(X_train,  X_mean, n_components = n_components)
-    X_train_PCA = pca(X_train, X_mean, U)
-    return X_train_PCA
+def extract_PCA(X, X_mean, n_components=3):
+    pca = PCA(n_components=n_components)
+    X_PCA = pca.fit_transform(X - X_mean)
+    return X_PCA
+
