@@ -202,7 +202,7 @@ def evaluate_model(model, X_test, y_test, labels):
     plt.yticks(np.arange(len(labels)) + 0.5, labels, rotation=0)
     plt.xlabel("Predicted (%)")
     plt.ylabel("True label")
-    plt.savefig(f"./plots/{type(model).__name__}.pdf")
+    plt.savefig(f"./plots/{type(model).__name__}.png")
     
     print("Accuracy: {:.4f}".format(acc))
     print("Precision: {:.4f}".format(precision))
