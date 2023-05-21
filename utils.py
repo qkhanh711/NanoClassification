@@ -25,7 +25,7 @@ import scikitplot as skplt
 import pickle
 from os import path
 import os
-import seaborn as sns
+import seaborn as sn
 
 paths = ["Data for Nano-AI/4-nitrophenol", "Data for Nano-AI/Carbaryl", "Data for Nano-AI/Chloramphenicol", "Data for Nano-AI/Congo Red", "Data for Nano-AI/Crystal Violet", 
          "Data for Nano-AI/Glyphosate", "Data for Nano-AI/Methylene Blue", "Data for Nano-AI/Thiram", "Data for Nano-AI/Tricyclazole", "Data for Nano-AI/Urea"]
@@ -81,7 +81,7 @@ def Norm(X, option = 'min_max'):
         
         X_min = X.min(axis=0, keepdims=True)
         X_max = X.max(axis=0, keepdims=True)
-        X = np.maximum(X, 0)
+        # X = np.maximum(X, 0)
         X_norm = (X - X_min) / (X_max - X_min)
         return X_norm
     elif option == "z_score":
@@ -203,7 +203,7 @@ def evaluate_model(model, X_test, y_test, labels):
     cm_percent = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]) * 100
     
     plt.figure(figsize=(10.2, 7))
-    sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
+    sn.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
     plt.title("Confusion Matrix")
     plt.xticks(np.arange(len(labels)) + 0.5, labels, rotation=45, ha="right")
     plt.yticks(np.arange(len(labels)) + 0.5, labels, rotation=0)
@@ -224,3 +224,16 @@ def save_model(file_name, model):
         print(f"Saved model '{file_name}' to disk")
     else:
         print(f"Model '{file_name}' already saved")
+
+def calculate_average_probabilities(X_test, y_test, model):
+    result = model_predict(X_test, y_test, model, print_eval = False)
+    labels = result["Class"]
+    probabilities = result["Probability"]
+    
+    average_probabilities = []
+    for label in set(labels):
+        indices = [i for i, value in enumerate(labels) if value == label]
+        label_probabilities = np.mean([probabilities[i] for i in indices], axis=0)
+        average_probabilities.append(label_probabilities)
+    sn.heatmap(average_probabilities, annot=True, fmt=".1f", cmap="Blues")
+    return average_probabilities
