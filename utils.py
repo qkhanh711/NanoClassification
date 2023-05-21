@@ -76,11 +76,17 @@ def make_data(paths_data = paths):
 
     return X, labels
 
-def Norm(X, X_min, X_max, X_mean, X_std, option = 'min_max'):
+def Norm(X, option = 'min_max'):
     if option == "min_max":
+        
+        X_min = X.min(axis=0, keepdims=True)
+        X_max = X.max(axis=0, keepdims=True)
+        X = np.maximum(X, 0)
         X_norm = (X - X_min) / (X_max - X_min)
         return X_norm
     elif option == "z_score":
+        X_mean = np.mean(X)
+        X_std = np.std(X)
         Z_score = (X - X_mean) / X_std
         return Z_score
     
@@ -103,14 +109,15 @@ def visualize(X, y, option="3d", eval= 0, azim = 0, legend = True):
     
     plt.show()
 
-def model_predict(X_test, y_test, name, X_min = None, X_max = None, X_mean = None, X_std = None, path = None):
+def model_predict(X_test, y_test, name, path = None, print_eval = True):
     print("Testing with " + type(name).__name__)
     """ If path = None, the model will make predictions on the test set
     , otherwise it will make a prediction on a single sample """
     if path != None:
         data = pd.read_csv(path, sep="\t")
         x = data.iloc[:, 1].values
-        x = Norm(x, X_min, X_max, X_mean, X_std).reshape(1,X_test.shape[1])
+        x = Norm(x).reshape(1,X_test.shape[1])
+
     else: x = X_test
 
     model = name
@@ -120,7 +127,7 @@ def model_predict(X_test, y_test, name, X_min = None, X_max = None, X_mean = Non
     probs = [np.round(p, 2) for p in proba]
     
     result = {"Predict": predict, "Class" : [labels[int(p)] for p in predict], "Probability": probs}
-    if path == None:
+    if path == None and print_eval == True:
         evaluate_model(name, X_test, y_test, labels)
     return result
 
@@ -196,7 +203,7 @@ def evaluate_model(model, X_test, y_test, labels):
     cm_percent = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]) * 100
     
     plt.figure(figsize=(10.2, 7))
-    sns.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues")
+    sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
     plt.title("Confusion Matrix")
     plt.xticks(np.arange(len(labels)) + 0.5, labels, rotation=45, ha="right")
     plt.yticks(np.arange(len(labels)) + 0.5, labels, rotation=0)
