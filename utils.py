@@ -53,8 +53,8 @@ def plot_data(paths, labels, file_names, nrows, ncols, figsize):
     plt.tight_layout()  
     plt.show()
 
-def make_data(paths_data = paths):
-    X = np.empty((0, 2047))
+def make_data(paths_data = paths, num_features=None):
+    X = np.empty((0, num_features))
     labels = np.empty((0, 1))
     for i in range(0, len(paths_data)):
         folder_path = paths_data[i]
@@ -62,7 +62,7 @@ def make_data(paths_data = paths):
             file_path = os.path.join(folder_path, f"{file_names[j]}")
             data = pd.read_csv(file_path, sep="\t")
 
-            x = data.iloc[:, 1].values
+            x = data.iloc[[1886, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
 
             label = np.full((1, 1), i)
 
