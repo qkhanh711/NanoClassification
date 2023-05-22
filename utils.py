@@ -115,7 +115,7 @@ def model_predict(X_test, y_test, name, path = None, print_eval = True):
     , otherwise it will make a prediction on a single sample """
     if path != None:
         data = pd.read_csv(path, sep="\t")
-        x = data.iloc[:, 1].values
+        x = data.iloc[[1886, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
         x = Norm(x).reshape(1,X_test.shape[1])
 
     else: x = X_test
