@@ -62,7 +62,7 @@ def make_data(paths_data = paths, num_features=None):
             file_path = os.path.join(folder_path, f"{file_names[j]}")
             data = pd.read_csv(file_path, sep="\t")
 
-            x = data.iloc[[1886, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
+            x = data.iloc[[1885, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
 
             label = np.full((1, 1), i)
 
@@ -203,7 +203,7 @@ def evaluate_model(model, X_test, y_test, labels):
     cm_percent = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]) * 100
     
     plt.figure(figsize=(10.2, 7))
-    sn.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
+    sn.heatmap(cm_percent, annot=True, fmt=".1f", cmap="Blues")
     plt.title("Confusion Matrix")
     plt.xticks(np.arange(len(labels)) + 0.5, labels, rotation=45, ha="right")
     plt.yticks(np.arange(len(labels)) + 0.5, labels, rotation=0)
