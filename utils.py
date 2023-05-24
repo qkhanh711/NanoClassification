@@ -62,8 +62,16 @@ def make_data(paths_data = paths, num_features=None):
             file_path = os.path.join(folder_path, f"{file_names[j]}")
             data = pd.read_csv(file_path, sep="\t")
 
-            x = data.iloc[[1885, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
-
+            x = data.iloc[[1885, 1856, 1463, 1422,
+                            1888, 1860, 1473, 1356,
+                            1506, 1410, 1266, 921,
+                            1782, 1513, 1393, 1270,
+                                  1438, 1641, 1503,
+                            1872, 1713, 1666, 1576,
+                            1876, 1849, 1382, 1255,
+                            1878, 1820, 1520, 1395,
+                                  1608, 1428, 
+                            1596], 1].values    
             label = np.full((1, 1), i)
 
             X = np.concatenate((X, [x]), axis=0) 
@@ -115,7 +123,16 @@ def model_predict(X_test, y_test, name, path = None, print_eval = True):
     , otherwise it will make a prediction on a single sample """
     if path != None:
         data = pd.read_csv(path, sep="\t")
-        x = data.iloc[[1886, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
+        x = data.iloc[[1885, 1856, 1463, 1422,
+                            1888, 1860, 1473, 1356,
+                            1506, 1410, 1266, 921,
+                            1782, 1513, 1393, 1270,
+                                  1438, 1641, 1503,
+                            1872, 1713, 1666, 1576,
+                            1876, 1849, 1382, 1255,
+                            1878, 1820, 1520, 1395,
+                                  1608, 1428, 
+                            1596], 1].values
         x = Norm(x).reshape(1,X_test.shape[1])
 
     else: x = X_test
