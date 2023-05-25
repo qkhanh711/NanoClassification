@@ -54,6 +54,8 @@ def plot_data(paths, labels, file_names, nrows, ncols, figsize):
     plt.show()
 
 def make_data(paths_data = paths, num_features=None):
+    """Number of features = 34 to train
+                            10 to visualize"""
     X = np.empty((0, num_features))
     labels = np.empty((0, 1))
     for i in range(0, len(paths_data)):
@@ -62,7 +64,10 @@ def make_data(paths_data = paths, num_features=None):
             file_path = os.path.join(folder_path, f"{file_names[j]}")
             data = pd.read_csv(file_path, sep="\t")
 
-            x = data.iloc[[1885, 1856, 1463, 1422,
+            if num_features == 10: 
+                x = data.iloc[[1885, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
+            else:
+                x = data.iloc[[1885, 1856, 1463, 1422,
                             1888, 1860, 1473, 1356,
                             1506, 1410, 1266, 921,
                             1782, 1513, 1393, 1270,
@@ -108,7 +113,7 @@ def visualize(X, y, option="3d", eval= 0, azim = 0, legend = True):
     for c in range(len(paths)):
         idx = np.where(y == c)[0]
         if option == "3d":
-            ax.scatter3D(X[idx,3], X[idx,2], X[idx,4], c=colors[c], label=f"{labels[c]}")
+            ax.scatter3D(X[idx,0], X[idx,1], X[idx,2], c=colors[c], label=f"{labels[c]}")
             ax.view_init(elev=eval, azim=azim)
         else:
             ax.scatter(X[idx,0], X[idx,1], c=colors[c], label=f"{labels[c]}")
