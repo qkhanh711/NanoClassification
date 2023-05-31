@@ -64,9 +64,7 @@ def make_data(paths_data = paths, num_features=None):
             file_path = os.path.join(folder_path, f"{file_names[j]}")
             data = pd.read_csv(file_path, sep="\t")
 
-            if num_features == 10: 
-                x = data.iloc[[1885, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values
-            else:
+            if num_features == 34: 
                 x = data.iloc[[1885, 1856, 1463, 1422,
                             1888, 1860, 1473, 1356,
                             1506, 1410, 1266, 921,
@@ -76,7 +74,11 @@ def make_data(paths_data = paths, num_features=None):
                             1876, 1849, 1382, 1255,
                             1878, 1820, 1520, 1395,
                                   1608, 1428, 
-                            1596], 1].values    
+                            1596], 1].values   
+            elif num_features == 10:
+                x = data.iloc[[1885, 1391, 1670, 1407, 1421, 1577, 1878, 1512, 1892, 1596], 1].values 
+            else:
+                x = data.iloc[:, 1].values
             label = np.full((1, 1), i)
 
             X = np.concatenate((X, [x]), axis=0) 
